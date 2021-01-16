@@ -5,7 +5,7 @@ import sys
 import logging
 import json
 
-class MathProblems:
+class ProblemGenerator:
     _assigned_problems = []
     _problem_type = 'r'
     _num_questions = 0
@@ -96,7 +96,6 @@ class MathProblems:
 
 
     def _assign_problems(self):
-        print("hello")
         for i in range(self._num_questions):
             new_problem = {}
             self.SELECTION = self._problem_type[random.randint(0,len(self._problem_type)-1)]
@@ -163,65 +162,3 @@ class MathProblems:
     def _sign_random(self):
         self.SELECTION
         return self._function_types[self.SELECTION]['sign']
-
-
-
-
-
-# math_type = sys.argv[1]
-# num_questions = int(sys.argv[2])
-# max_result = int(sys.argv[3])
-# lowest_number = int(sys.argv[4])
-
-# num_pad = len(str(max_result))
-
-# SELECTION = math_type
-
-# correct_answers = 0
-
-# for i in range(num_questions):
-#     input1, input2 = self._function_types[math_type]['generation'](max_result, lowest_number)
-#     number_provided = False
-
-#     while not number_provided:
-#         print(str(input1).rjust(num_pad + 3), '')
-#         print(f' {self._function_types[self.SELECTION]["sign"]} {str(input2).rjust(num_pad)}')
-#         print(''.rjust(num_pad + 3, '-'))
-#         print('   ', end="")
-#         # print(f'{input1} {self._function_types[self.SELECTION]["sign"]} {input2} = ', end="")
-#         answer = input()
-
-#         try:
-#             solution = self._function_types[math_type]['solution'](input1, input2)
-#             correct = solution == int(answer)
-#             number_provided = True
-
-#             if correct:
-#                 print('Correct!\n')
-#                 correct_answers += 1
-#             else:
-#                 print(f'The correct answer was {solution}\n')
-
-#         except:
-#             print('umm, that wasn\'t a number')
-
-# print(f'You scored {(correct_answers/num_questions)*100}%')
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-math_problems = MathProblems(
-    problem_type='a',
-    num_questions=2,
-    max_result=4,
-    lowest_number=1
-)
-
-while math_problems.next_problem():
-    print(f'{math_problems.get_problem()}\n   ', end='')
-    while not math_problems.test_answer(int(input())):
-        print(f'{math_problems.get_problem()}\n   ', end='')
-
-print(math_problems.get_current_score())
-print(math_problems.get_attempts())
-print(math_problems.get_attempts_score())

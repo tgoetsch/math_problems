@@ -1,0 +1,1 @@
+MY_INTERNAL_VAR = 'tim'
