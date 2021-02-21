@@ -17,7 +17,8 @@ class ProblemGenerator:
                  problem_type: str = 'r',
                  num_questions: int = 10,
                  max_result: int = 100,
-                 lowest_number: int = 0):
+                 lowest_number: int = 0,
+                 no_carry: bool = False):
 
         self._function_types = {
             'a': {
@@ -45,6 +46,7 @@ class ProblemGenerator:
         self._num_questions = num_questions
         self._max_result = max_result
         self._lowest_number = lowest_number
+        self._no_carry = no_carry
         self._assign_problems()
 
 
@@ -59,6 +61,26 @@ class ProblemGenerator:
         return '\n'.join((f'{input1.rjust(num_pad + 3, " ")}',
                 f' {sign} {input2.rjust(num_pad, " ")}',
                 '   '.ljust(num_pad + 3, '-')))
+
+
+    def get_problem_with_guide(self, problem_index: int = None) -> str:
+        if not problem_index:
+            problem_index = self.current_problem
+
+        input1 = str(self._assigned_problems[problem_index]['input1'])
+        input2 = str(self._assigned_problems[problem_index]['input2'])
+        
+        num_pad = len(str(input1)) if len(str(input1)) > len(str(input2)) else len(str(input2))
+        full_pad = num_pad * 2 + 1
+        
+        sign = self._function_types[self._assigned_problems[problem_index]['type']]['sign']
+        
+        input1_str = f"|{'|'.join(list(input1.rjust(num_pad, ' ')))}|"
+        input2_str = f"|{'|'.join(list(input2.rjust(num_pad, ' ')))}|"
+        
+        return '\n'.join((f'{input1_str.rjust(full_pad + 3, " ")}',
+                f' {sign} {input2_str.rjust(full_pad, " ")}',
+                '   '.ljust(full_pad + 3, '-')))
 
 
     def next_problem(self) -> str:
@@ -88,7 +110,7 @@ class ProblemGenerator:
     def get_attempts_score(self) -> float:
         correct = len([correct for correct in self._assigned_problems if correct['solved']])
         attempts = self.get_attempts()
-        return correct / attempts
+        return correct / attempts if attempts > 0 else 0
 
 
     def get_attempts(self) -> int:
@@ -113,12 +135,43 @@ class ProblemGenerator:
         input1 = random.randint(self._lowest_number, self._max_result)
         input2 = random.randint(self._lowest_number, self._max_result)
 
-        while input1 + input2 > self._max_result:
+        acceptable_problem = input1 + input2 <= self._max_result
+
+        if self._no_carry:
+            acceptable_problem = (acceptable_problem and 
+                                 not self._test_addition_carry(input1, input2))
+
+
+        while not acceptable_problem:
             input1 = random.randint(self._lowest_number, self._max_result)
             input2 = random.randint(self._lowest_number, self._max_result)
+            
+            acceptable_problem = input1 + input2 <= self._max_result
+
+            if self._no_carry:
+                acceptable_problem = (acceptable_problem and 
+                                     not self._test_addition_carry(input1, input2))
 
         return input1, input2, (input1 + input2)
 
+    
+    def _test_addition_carry(self, input1: int, input2: int):
+        numplaces = len(str(input1)) if len(str(input1)) > len(str(input2)) else len(str(input2))
+        working_input1 = input1
+        working_input2 = input2
+        
+        for _ in range(numplaces):
+            input1_ones_place = working_input1 % 10
+            input2_ones_place = working_input2 % 10
+
+            if input1_ones_place + input2_ones_place >= 10:
+                print(f'Carry found for {input1} + {input2}')
+                return True
+            
+            working_input1 = (working_input1 - input1_ones_place) / 10
+            working_input2 = (working_input2 - input2_ones_place) / 10
+
+        return False
 
     def _new_multiplication_problem(self):
         input1 = random.randint(self._lowest_number, self._max_result)
